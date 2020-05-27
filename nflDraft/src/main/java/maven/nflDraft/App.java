@@ -52,6 +52,8 @@ public class App {
             return;
         }
         System.out.println(" ... successfully connected");
+        System.out.println(" YOURE SO SMART EMILY GOOD JOB");
+
 
         System.out.print("Disconnecting from database");
         try {
