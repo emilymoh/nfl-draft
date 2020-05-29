@@ -1,69 +1,46 @@
 package maven.nflDraft;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.net.URI;
+import java.sql.*;
 import java.util.Map;
 
-/**
- * App is our basic admin app.  For now, all it does is connect to the database
- * and then disconnect
- */
 public class App {
-    /**
-     * The main routine reads arguments from the environment and then uses those
-     * arguments to connect to the database.
-     */
     public static void main(String[] argv) {
-        // get the Postgres configuration from the environment
-        Map<String, String> env = System.getenv();
-        String ip = env.get("POSTGRES_IP");
-        String port = env.get("POSTGRES_PORT");
-        String user = env.get("POSTGRES_USER");
-        String pass = env.get("POSTGRES_PASS");
+        //ElephantSQL Environment Variables
+        String username = "avpqaajq";
+        String password = "l75pwkJS7ly1eIcwy_IX9ayydqexfhQc";
+        String dbUrl = "jdbc:postgresql://hansken.db.elephantsql.com:5432/avpqaajq";
 
-        // Some students find that they need the following lines 
-        // *before DriverManager.getConnection* in order to get the postgres
-        // driver to load
+        //Declare Connection and Statement
+        Connection db;
+        Statement st;
 
-        // try {
-        //     Class.forName("org.postgresql.Driver");
-        // } catch (ClassNotFoundException cnfe) {
-        //     System.out.println("Unable to find postgresql driver");
-        //     return;
-        // }
-
-        // conn is a connection to the database.  In this simple example, it is
-        // a local variable, though in a realistic program it might not be
-        Connection conn = null;
-
-        // Connect to the database or fail
-        System.out.print("Connecting to " + ip + ":" + port);
+        //Create the connection to the database as well as the statement, if there is an error, print message
         try {
-            // Open a connection, fail if we cannot get one
-            conn = DriverManager.getConnection("jdbc:postgresql://" + ip + ":" + port + "/", user, pass);
-            if (conn == null) {
-                System.out.println("\n\tError: DriverManager.getConnection() returned a null object");
-                return;
+            db = DriverManager.getConnection(dbUrl, username, password);
+            System.out.println("connection successfully made");
+            st = db.createStatement();
+        } catch (SQLException e) {
+            System.out.println("There was an error connecting to the database");
+            e.printStackTrace();
+            return;
+        }
+
+        //Begin the first sql query
+        ResultSet rs;
+        try {
+            rs = st.executeQuery("SELECT * FROM years");
+            System.out.println("The possible years are: ");
+            while (rs.next()) {
+                System.out.println(rs.getString(2));
             }
         } catch (SQLException e) {
-            System.out.println("\n\tError: DriverManager.getConnection() threw a SQLException");
+            System.out.println("There was an error getting the data from the test table");
             e.printStackTrace();
             return;
         }
-        System.out.println(" ... successfully connected");
-        System.out.println(" YOURE SO SMART EMILY GOOD JOB");
-
-
-        System.out.print("Disconnecting from database");
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            System.out.println("\n\tError: close() threw a SQLException");
-            e.printStackTrace();
-            return;
-        }
-        System.out.println(" ...  connection successfully closed");
+                
     }
+
 }
 
