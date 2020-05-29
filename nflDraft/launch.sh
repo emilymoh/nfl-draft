@@ -6,10 +6,12 @@
 # docker run -p5432:5432 --name nflDraft-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=emilymohrenweiser -d postgres
 
 # Run App
-mvn compile
+echo "Please be patient, this process will take a few moments. Disregard all messages until prompted..."
+mvn compile -q
 # mvn clean
-mvn package
-mvn exec:java
+mvn package -Dmaven.test.skip --quiet
+clear
+mvn exec:java -q
 # POSTGRES_IP=127.0.0.1 POSTGRES_PORT=5432 POSTGRES_USER=emilymohrenweiser POSTGRES_PASS=password mvn exec:java
 
 #java -jar target/nflDraft-1.0-SNAPSHOT-jar-with-dependencies.jar

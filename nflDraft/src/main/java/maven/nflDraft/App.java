@@ -6,6 +6,34 @@ import java.util.Map;
 
 public class App {
     public static void main(String[] argv) {
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t********WELCOME TO THE NFL DRAFT QUIZ********");      
+        System.out.println("\t\t\t***Written by Emily and Aaron Mohrenweiser***");      
+        System.out.println("\t\t\t*********************************************");   
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");
+        System.out.println("\t\t\t*********************************************");   
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+
+
         //ElephantSQL Environment Variables
         String username = "avpqaajq";
         String password = "l75pwkJS7ly1eIcwy_IX9ayydqexfhQc";
