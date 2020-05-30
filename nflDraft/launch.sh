@@ -7,11 +7,11 @@
 
 # Run App
 echo "Please be patient, this process will take a few moments. Disregard all messages until prompted..."
-mvn compile -q
+mvn compile -q -B
 # mvn clean
-mvn package -Dmaven.test.skip --quiet
+mvn package -B -Dmaven.test.skip --quiet 
 clear
-mvn exec:java -q
+mvn -q -B exec:java
 # POSTGRES_IP=127.0.0.1 POSTGRES_PORT=5432 POSTGRES_USER=emilymohrenweiser POSTGRES_PASS=password mvn exec:java
 
 #java -jar target/nflDraft-1.0-SNAPSHOT-jar-with-dependencies.jar
