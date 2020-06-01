@@ -58,7 +58,7 @@ public class App {
             return;
         }
 
-        //I think if we make one resultset we can reuse it each time when calling executeStatement
+        //I think if we make one ResultSet we can reuse it each time when calling executeStatement
         // ResultSet rs;
         // System.out.println("Testing helper methods");
         // rs = executeStatement(st, "Select * from users");
