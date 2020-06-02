@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class App {
     public static void main(String[] argv) {
@@ -51,37 +52,34 @@ public class App {
         try {
             db = DriverManager.getConnection(dbUrl, username, password);
             System.out.println("connection successfully made");
-            st = db.createStatement();
+            st = db.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         } catch (SQLException e) {
             System.out.println("There was an error connecting to the database");
             e.printStackTrace();
             return;
         }
 
-        //I think if we make one ResultSet we can reuse it each time when calling executeStatement
-        // ResultSet rs;
-        // System.out.println("Testing helper methods");
-        // rs = executeStatement(st, "Select * from users");
-        // printResults(rs);
-
         // ask user for name
         String userName = null;
-
-        System.out.println("Enter Name");
-        userName = input.next();
-        System.out.println("The name you entered is: " + userName);
-
+        boolean inputUsername = true;
+        while(inputUsername){
+            System.out.println("Please enter the name you want to be used for the leaderboard: ");
+            userName = stringUserInput(input);
+            System.out.println("The name you entered is: " + userName);
+            System.out.println("Whould you like to enter a different name? (Yes/No)");
+            String newName = stringUserInput(input);
+            if (newName.equals("no")){
+                inputUsername = false;
+            } 
+        }
+        
         // ask user for league
-        String lName = null;
         String leagueName = null;
-
         boolean notValidLeagueName = true;
         while (notValidLeagueName) {
-            System.out.println("choose a league");
+            System.out.println("Please choose a league");
             System.out.println("Option 1: NFL   Option 2: NBA");
-            lName = input.next();
-            leagueName = lName.toLowerCase();
-
+            leagueName = stringUserInput(input);
             if (leagueName.equals("nfl")) {
                 System.out.println("you chose NFL");
                 notValidLeagueName = false;
@@ -89,7 +87,6 @@ public class App {
                 System.out.println("you chose NBA");
                 notValidLeagueName = false;
             } else {
-                System.out.println(leagueName);
                 System.out.println("you did not enter a valid option");
                 System.out.println("pls try again");
             }
@@ -97,22 +94,19 @@ public class App {
         }
 
         // ask question type
-        String lquestionType = null;
         String questionType = null;
-
         boolean notValidQuestionType = true;
         while (notValidQuestionType) {
             System.out.println("Choose a question type");
             System.out.println("Option 1: draft order     Option 2: combine         Option 3: teams");
-            questionType = input.nextLine();
-            lquestionType = questionType.toLowerCase();
-            if (lquestionType.equals("draft order")) {
+            questionType = stringUserInput(input);
+            if (questionType.equals("draft order")) {
                 System.out.println("you chose draft order");
                 notValidQuestionType = false;
-            } else if (lquestionType.equals("combine")) {
+            } else if (questionType.equals("combine")) {
                 System.out.println("you chose combine");
                 notValidQuestionType = false;
-            } else if (lquestionType.equals("teams")) {
+            } else if (questionType.equals("teams")) {
                 System.out.println("you chose teams");
                 notValidQuestionType = false;
             } else {
@@ -122,22 +116,28 @@ public class App {
             }
         }
 
-        // Begin the first sql query
         ResultSet rs;
-        try {
-            rs = st.executeQuery("SELECT * FROM years");
-            System.out.println("The possible years are: ");
-            while (rs.next()) {
-                System.out.println("\t" + rs.getString(2));
-            }
-        } catch (SQLException e) {
-            System.out.println("There was an error getting the data from the test table");
-            e.printStackTrace();
-            return;
+
+        System.out.println("Please choose which year of the NFL draft you would like to be quizzed on: ");
+        System.out.println("If you would like to be quizzed on all of the years, please type '0'");
+
+        rs = executeStatement(st, "SELECT * FROM years");
+        printResults(rs);
+
+        int year = integerUserInput(input);
+
+        System.out.println("The quiz will now begin...");
+
+        if(year == 0){
+            System.out.println("You chose all years");
+            rs = executeStatement(st, "SELECT question FROM questions");
+            printQuestion(rs);
+        } else {
+            System.out.println("You chose the year " + year);
+            
         }
 
-        System.out.println("choose optional year");
-        System.out.println("not valid year");
+    
 
     }
 
@@ -182,7 +182,7 @@ public class App {
                 System.out.println("Please enter valid string");
             }
         }
-        return returnInput;
+        return returnInput.toLowerCase();
     }
 
     //Call this method when you want to execute a query, it will automatically catch exceptions
@@ -232,6 +232,34 @@ public class App {
         }
 
     }
+
+    public static void printQuestion(ResultSet questions){
+        //number of rows
+        int numRows = 0;
+        try {
+            while (questions.next()) {
+                numRows++;
+            }
+            if (numRows == 0) {
+                System.out.println("No records found");
+            }
+        } catch (SQLException e) {
+            System.out.println("There was an error getting the number of rows");
+            e.printStackTrace();
+        }
+        //random number generator in the range of the number of rows 
+        int randomNum = ThreadLocalRandom.current().nextInt(1, numRows + 1);
+
+        //print specific row 
+        try {
+            questions.absolute(randomNum);
+            System.out.print("\t" + questions.getString(1));
+            
+        } catch (SQLException e) {
+            System.out.println("There was an error getting the question");
+            e.printStackTrace();
+        }
+    } 
 
 }
 
