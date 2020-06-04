@@ -56,23 +56,24 @@ public class App {
         } catch (SQLException e) {
             System.out.println("There was an error connecting to the database");
             e.printStackTrace();
+            input.close();
             return;
         }
 
         // ask user for name
         String userName = null;
         boolean inputUsername = true;
-        while(inputUsername){
+        while (inputUsername) {
             System.out.println("Please enter the name you want to be used for the leaderboard: ");
             userName = stringUserInput(input);
             System.out.println("The name you entered is: " + userName);
             System.out.println("Whould you like to enter a different name? (Yes/No)");
             String newName = stringUserInput(input);
-            if (newName.equals("no")){
+            if (newName.equals("no")) {
                 inputUsername = false;
-            } 
+            }
         }
-        
+
         // ask user for league
         String leagueName = null;
         boolean notValidLeagueName = true;
@@ -93,6 +94,7 @@ public class App {
 
         }
 
+        /*
         // ask question type
         String questionType = null;
         boolean notValidQuestionType = true;
@@ -115,6 +117,7 @@ public class App {
                 System.out.println("pls try again");
             }
         }
+        */
 
         ResultSet rs;
 
@@ -128,17 +131,72 @@ public class App {
 
         System.out.println("The quiz will now begin...");
 
-        if(year == 0){
-            System.out.println("You chose all years");
-            rs = executeStatement(st, "SELECT question FROM questions");
-            printQuestion(rs);
+        ResultSet questions = null;
+
+        Scanner answerScanner = new Scanner(System.in);
+
+        if (year == 0) {
+            questions = executeStatement(st, "SELECT * FROM questions WHERE league like '" + leagueName + "'");
+            try {
+                if (!questions.next()) {
+                    System.out.println("No questions found");
+                } else {
+                    boolean one_question = true;
+                    while(one_question){
+                        do {
+                                System.out.print("\t" + questions.getString("question") + "\n");
+                                String userAnswer = stringUserInput(answerScanner);
+                                String rightAnswer = questions.getString("answer").toLowerCase();
+
+                                while(!(userAnswer.equals(rightAnswer))){
+                                    System.out.println("Try again or skip?");
+                                    String userChoice = stringUserInput(answerScanner);
+                                    if((Character.compare(userChoice.charAt(0), 't')) == 0){
+                                        System.out.print("\t" + questions.getString("question") + "\n");
+                                        userAnswer = stringUserInput(answerScanner);
+                                    } 
+                                    else if((Character.compare(userChoice.charAt(0), 's')) == 0){
+                                        userAnswer = rightAnswer;
+                                    }
+                                }
+                        } while (questions.next());
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
         } else {
-            System.out.println("You chose the year " + year);
-            
+            questions = executeStatement(st, "select * from question where year = " + year + " and league like '" + leagueName + "'");
+            try {
+                if (!questions.next()) {
+                    System.out.println("No questions found");
+                } else {
+                    boolean one_question = true;
+                    while(one_question){
+                        do {
+                                System.out.print("\t" + questions.getString("question") + "\n");
+                                String userAnswer = stringUserInput(answerScanner);
+                                String rightAnswer = questions.getString("answer").toLowerCase();
+
+                                while(!(userAnswer.equals(rightAnswer))){
+                                    System.out.println("Try again or skip?");
+                                    String userChoice = stringUserInput(answerScanner);
+                                    if((Character.compare(userChoice.charAt(0), 't')) == 0){
+                                        System.out.print("\t" + questions.getString("question") + "\n");
+                                        userAnswer = stringUserInput(answerScanner);
+                                    } 
+                                    else if((Character.compare(userChoice.charAt(0), 's')) == 0){
+                                        userAnswer = rightAnswer;
+                                    }
+                                }
+                        } while (questions.next());
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }   
         }
-
-    
-
     }
 
     // HELPER METHODS (do not touch)
@@ -233,7 +291,7 @@ public class App {
 
     }
 
-    public static void printQuestion(ResultSet questions){
+    public static void printRandomQuestion(ResultSet questions){
         //number of rows
         int numRows = 0;
         try {
@@ -260,6 +318,45 @@ public class App {
             e.printStackTrace();
         }
     } 
+
+    public static void printQuestion(ResultSet questions, Scanner input){
+        boolean keepGoing = true;
+        try {
+            if (!questions.next()) {
+                System.out.println("No records found");
+            } else {
+                while(keepGoing){
+                    do {
+                        System.out.println("\t" + questions.getString(2));
+                        System.out.println("");
+                        String correctAnswer = questions.getString(3);
+                        String userAnswer = input.nextLine();
+                        //String userAnswer = stringUserInput(input);
+                        System.out.println("The correct answer is: " + correctAnswer);
+                        System.out.println("The user's answer is: " + userAnswer);
+
+                        if(!userAnswer.equals(correctAnswer)){
+                            System.out.println("Try again or skip?");
+                            String userChoice = stringUserInput(input);
+                            if((Character.compare(userChoice.charAt(0), 't')) == 0){
+                                userAnswer = stringUserInput(input);
+                            } 
+                            else if((Character.compare(userChoice.charAt(0), 's')) == 0){
+                                //What should happen when a question is skipped?
+                            }
+                        } else {
+                            System.out.println("Correct");
+                        }
+    
+                    } while (questions.next());
+                    
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("There was an error printing the results");
+            e.printStackTrace();
+        }
+    }
 
 }
 
