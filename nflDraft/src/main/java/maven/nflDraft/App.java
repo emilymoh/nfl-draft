@@ -121,15 +121,17 @@ public class App {
 
         ResultSet rs;
 
-        System.out.println("Please choose which year of the NFL draft you would like to be quizzed on: ");
+        System.out.println("Please choose which year of the "+ leagueName +" draft you would like to be quizzed on: ");
         System.out.println("If you would like to be quizzed on all of the years, please type '0'");
 
-        rs = executeStatement(st, "SELECT * FROM years");
+        rs = executeStatement(st, "SELECT year FROM years");
         printResults(rs);
 
         int year = integerUserInput(input);
 
         System.out.println("The quiz will now begin...");
+
+        int score = 0;
 
         ResultSet questions = null;
 
@@ -157,13 +159,18 @@ public class App {
                                     } 
                                     else if((Character.compare(userChoice.charAt(0), 's')) == 0){
                                         userAnswer = rightAnswer;
+                                        score += -1; 
                                     }
                                 }
+                                score += 1;
+
                         } while (questions.next());
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                // e.printStackTrace();
+                System.out.println("the quiz is done");
+
             }
 
         } else {
@@ -188,15 +195,41 @@ public class App {
                                     } 
                                     else if((Character.compare(userChoice.charAt(0), 's')) == 0){
                                         userAnswer = rightAnswer;
+                                        score += -1;
                                     }
                                 }
+                                score += 1;
                         } while (questions.next());
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                // e.printStackTrace();
+                System.out.println("the quiz is done");
+
             }   
         }
+        // System.out.println("Your score is " + score );
+        // executeUpdate(st, "insert into users value (4, '"+ userName + "', " + score ")");
+        String table = "users_" + leagueName;
+        int user_id =  newUserID(st, table);
+
+        try {       
+            PreparedStatement ps = db.prepareStatement("insert into " + table + " values (?,?,?)");
+            
+            ps.setInt(1, user_id);
+            ps.setString(2, userName);
+            ps.setInt(3, score);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }   
+
+        ResultSet users = executeStatement(st, "SELECT name, score FROM " + table + " ORDER BY score desc");
+        System.out.println("\t" + leagueName.toUpperCase() + " LEADERBOARD");
+        System.out.println("");
+        printResults(users);
+
     }
 
     // HELPER METHODS (do not touch)
@@ -291,32 +324,21 @@ public class App {
 
     }
 
-    public static void printRandomQuestion(ResultSet questions){
+    public static int newUserID(Statement st, String table){
+        ResultSet users = executeStatement(st, "SELECT * FROM " + table);
         //number of rows
         int numRows = 0;
         try {
-            while (questions.next()) {
+            while (users.next()) {
                 numRows++;
             }
-            if (numRows == 0) {
-                System.out.println("No records found");
-            }
+
         } catch (SQLException e) {
             System.out.println("There was an error getting the number of rows");
             e.printStackTrace();
         }
         //random number generator in the range of the number of rows 
-        int randomNum = ThreadLocalRandom.current().nextInt(1, numRows + 1);
-
-        //print specific row 
-        try {
-            questions.absolute(randomNum);
-            System.out.print("\t" + questions.getString(1));
-            
-        } catch (SQLException e) {
-            System.out.println("There was an error getting the question");
-            e.printStackTrace();
-        }
+        return numRows + 1;
     } 
 
     public static void printQuestion(ResultSet questions, Scanner input){
